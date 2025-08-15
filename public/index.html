@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Online Exam System</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <header>
+        <h1>Online Exam System</h1>
+    </header>
+    <main>
+        <!-- Section: Create Exam -->
+        <section id="create-exam">
+            <h2>Create Exam</h2>
+            <form id="create-exam-form">
+                <input type="text" id="exam-title" placeholder="Exam Title" required>
+                <button type="submit">Create Exam</button>
+            </form>
+        </section>
+
+        <!-- Section: List Exams -->
+        <section id="exam-list">
+            <h2>Available Exams</h2>
+            <ul id="exams"></ul>
+        </section>
+
+        <!-- Section: Import Questions -->
+        <section id="upload-questions">
+            <h2>Import Questions</h2>
+            <form id="upload-form">
+                <select id="exam-select"></select>
+                <input type="file" id="file-input" accept=".docx" required>
+                <button type="submit">Upload Questions</button>
+            </form>
+        </section>
+    </main>
+    <script src="script.js"></script>
+</body>
+</html>
