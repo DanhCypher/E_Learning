@@ -28,6 +28,60 @@
         const API_BASE = 'http://localhost:3000';
         const examId = new URLSearchParams(window.location.search).get('examId'); // Lấy examId từ URL
 
+        // Function to delete a question
+        async function deleteQuestion(questionId) {
+            if (!examId) {
+                alert('Exam ID is missing!');
+                return;
+            }
+            try {
+                const response = await fetch(`${API_BASE}/questions/${examId}/questions/${questionId}`, {
+                    method: 'DELETE',
+                });
+
+                if (response.ok) {
+                    alert('Question deleted successfully!');
+                    fetchQuestions(); // Cập nhật danh sách câu hỏi sau khi xóa
+                } else {
+                    const errorData = await response.json();
+                    alert(`Failed to delete question: ${errorData.message}`);
+                }
+            } catch (error) {
+                alert('An error occurred while deleting the question.');
+                console.error(error);
+            }
+        }
+
+        // Function to update a question
+        async function updateQuestion(questionId, newQuestion, newOptions, newCorrectAnswer) {
+            if (!examId) {
+                alert('Exam ID is missing!');
+                return;
+            }
+            try {
+                const response = await fetch(`${API_BASE}/questions/${examId}/questions/${questionId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        question: newQuestion,
+                        options: newOptions,
+                        correctAnswer: newCorrectAnswer,
+                    }),
+                });
+
+                if (response.ok) {
+                    alert('Question updated successfully!');
+                    fetchQuestions(); // Cập nhật danh sách câu hỏi sau khi sửa
+                } else {
+                    const errorData = await response.json();
+                    alert(`Failed to update question: ${errorData.message}`);
+                }
+            } catch (error) {
+                alert('An error occurred while updating the question.');
+                console.error(error);
+            }
+        }
+
         async function fetchQuestions() {
             if (!examId) {
                 alert('Invalid exam ID. Please select an exam.');
@@ -67,7 +121,7 @@
                         const newCorrectAnswer = prompt('Enter new correct answer:', q.correctAnswer);
 
                         if (newQuestion && newOptions && newCorrectAnswer) {
-                            updateQuestion(q._id, newQuestion, newOptions.split(','), newCorrectAnswer);
+                            updateQuestion(q._id, newQuestion, newOptions.split(',').map(opt => opt.trim()), newCorrectAnswer);
                         }
                     });
 
@@ -78,7 +132,7 @@
                     deleteIcon.style.cursor = 'pointer';
                     deleteIcon.style.color = 'red';
                     deleteIcon.addEventListener('click', () => {
-                        if (confirm(`Are you sure you want to delete this question?`)) {
+                        if (confirm(`Are you sure you want to delete this question: "${q.question}"?`)) {
                             deleteQuestion(q._id);
                         }
                     });

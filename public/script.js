@@ -167,6 +167,12 @@ async function updateExamTitle(examId, newTitle) {
 }
 
 async function deleteQuestion(questionId) {
+    // Lấy examId từ URL để luôn đúng ngữ cảnh
+    const examId = new URLSearchParams(window.location.search).get('examId');
+    if (!examId) {
+        alert('Exam ID is missing!');
+        return;
+    }
     try {
         const response = await fetch(`${API_BASE}/questions/${examId}/questions/${questionId}`, {
             method: 'DELETE',
