@@ -1,42 +1,153 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Online Exam System</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Online Exam System</title>
+  <link rel="stylesheet" href="style.css">
+  <!-- Font Awesome để có icon -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <header>
-        <h1>Online Exam System</h1>
-    </header>
-    <main>
-        <!-- Section: Create Exam -->
-        <section id="create-exam">
-            <h2>Create Exam</h2>
+  <header>
+    <div class="container">
+      <h1>Online Exam System</h1>
+      <nav>
+        <a href="index.html">Home</a>
+        <a href="register.html">Register</a>
+        <a href="viewQuestions.html">View Questions</a>
+        <a href="viewResults.html">View Results</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <!-- Page Title -->
+    <section class="page-title">
+      <div class="container">
+        <h2>Welcome to the Online Exam System</h2>
+        <p>Manage your exams, questions, and more with ease.</p>
+      </div>
+    </section>
+
+    <!-- Services Section -->
+    <section class="services">
+      <div class="container">
+        <div class="row">
+          <!-- Create Exam -->
+          <div class="service-box">
+            <h3>Create Exam</h3>
             <form id="create-exam-form">
-                <input type="text" id="exam-title" placeholder="Exam Title" required>
-                <button type="submit">Create Exam</button>
+              <input type="text" id="exam-title" placeholder="Exam Title" required>
+              <button type="submit">Create Exam</button>
             </form>
-        </section>
+          </div>
 
-        <!-- Section: List Exams -->
-        <section id="exam-list">
-            <h2>Available Exams</h2>
-            <ul id="exams"></ul>
-        </section>
+          <!-- List Exams -->
+          <div class="service-box">
+            <h3>Available Exams</h3>
+            <ul id="exams">
+              <!-- Example structure for each exam -->
+              <!--
+              <li>
+                <span>Exam Title</span>
+                <div class="actions">
+                  <button class="action-btn edit-btn" title="Edit">
+                    <i class="fa fa-pencil-alt"></i>
+                  </button>
+                  <button class="action-btn delete-btn" title="Delete">
+                    <i class="fa fa-trash-alt"></i>
+                  </button>
+                </div>
+              </li>
+              -->
+            </ul>
+          </div>
 
-        <!-- Section: Import Questions -->
-        <section id="upload-questions">
-            <h2>Import Questions</h2>
+          <!-- Import Questions -->
+          <div class="service-box">
+            <h3>Import Questions</h3>
             <form id="upload-form">
-                <select id="exam-select"></select>
-                <input type="file" id="file-input" accept=".docx" required>
-                <button type="submit">Upload Questions</button>
+              <select id="exam-select"></select>
+              <input type="file" id="file-input" accept=".docx" required>
+              <button type="submit">Upload Questions</button>
             </form>
-        </section>
-    </main>
-    <script src="script.js"></script>
+          </div>
+
+          <!-- Create Random Exam -->
+          <div class="service-box">
+            <h3>Create Random Exam</h3>
+            <form id="random-exam-form">
+              <select id="random-exam-title" required>
+                <option value="">Select an Exam Title</option>
+              </select>
+
+              <input type="number" id="random-exam-questions" placeholder="Number of Questions" required>
+              <button type="submit">Create Random Exam</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container">
+      <p>&copy; 2023 Online Exam System. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+    fetchExams(); // Gọi fetch exam
+
+    const randomExamForm = document.getElementById('random-exam-form');
+    if (randomExamForm) {
+        randomExamForm.addEventListener('submit', async (e) => {
+            e.preventDefault(); // Ngăn reload
+
+            console.log('Create Random Exam button clicked'); // Debug log
+
+            const selectedOption = randomExamTitleSelect.options[randomExamTitleSelect.selectedIndex];
+            const examId = selectedOption.text; 
+            const numberOfQuestions = parseInt(randomExamQuestionsInput.value);
+
+            if (!examId) {
+                alert('Please select an exam title.');
+                return;
+            }
+
+            if (!numberOfQuestions || numberOfQuestions <= 0) {
+                alert('Please enter a valid number of questions.');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/exams/random`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${localStorage.getItem('token')}`,
+                    },
+                    body: JSON.stringify({ title: examId, numberOfQuestions }),
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    alert('Random exam created successfully!');
+                    window.location.href = `takeExam.html?examId=${data.examId}`;
+                } else {
+                    const errorData = await response.json();
+                    alert(`Failed to create random exam: ${errorData.message}`);
+                }
+            } catch (error) {
+                alert('An error occurred while creating the random exam.');
+                console.error(error);
+            }
+        });
+    }
+});
+  </script>
 </body>
 </html>

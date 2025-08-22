@@ -5,178 +5,229 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>View Questions</title>
     <link rel="stylesheet" href="style.css">
-     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .question-actions {
+            display: inline-block;
+            margin-left: 10px;
+        }
+        .question-actions button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            margin-left: 5px;
+            font-size: 16px;
+        }
+        .question-actions .fa-edit {
+            color: green;
+        }
+        .question-actions .fa-trash {
+            color: red;
+        }
+    </style>
 </head>
 <body>
     <header>
-        <h1>View Questions</h1>
+        <div class="container">
+            <h1>Online Exam System</h1>
+            <nav>
+                <a href="index.html">Home</a>
+                <a href="register.html">Register</a>
+                <a href="viewQuestions.html">View Questions</a>
+                <a href="viewResults.html">View Results</a>
+            </nav>
+        </div>
     </header>
+
     <main>
-        <section id="view-questions">
-            <h2>Select Exam</h2>
-            <form id="view-questions-form">
-                <select id="exam-select-view"></select>
-                <button type="submit">View Questions</button>
-            </form>
+        <!-- Page Title -->
+        <section class="page-title">
+            <div class="container">
+                <h2>View Questions</h2>
+                <p>Select an exam to view its questions.</p>
+            </div>
         </section>
-        <section id="question-list">
-            <h2>Questions</h2>
-            <ul id="questions"></ul>
+
+        <!-- View Questions Section -->
+        <section class="services">
+            <div class="container">
+                <div class="row">
+                    <!-- Select Exam -->
+                    <div class="service-box">
+                        <h3>Select Exam</h3>
+                        <form id="view-questions-form">
+                            <select id="exam-select-view"></select>
+                            <button type="submit">View Questions</button>
+                        </form>
+                    </div>
+
+                    <!-- Questions List -->
+                    <div class="service-box">
+                        <h3>Questions</h3>
+                        <ul id="questions"></ul>
+                    </div>
+                </div>
+            </div>
         </section>
     </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2023 Online Exam System. All rights reserved.</p>
+        </div>
+    </footer>
+
     <script>
         const API_BASE = 'http://localhost:3000';
         const examId = new URLSearchParams(window.location.search).get('examId'); // Lấy examId từ URL
 
-        // Function to delete a question
-        async function deleteQuestion(questionId) {
-            if (!examId) {
-                alert('Exam ID is missing!');
-                return;
-            }
-            try {
-                const response = await fetch(`${API_BASE}/questions/${examId}/questions/${questionId}`, {
-                    method: 'DELETE',
-                });
-
-                if (response.ok) {
-                    alert('Question deleted successfully!');
-                    fetchQuestions(); // Cập nhật danh sách câu hỏi sau khi xóa
-                } else {
-                    const errorData = await response.json();
-                    alert(`Failed to delete question: ${errorData.message}`);
-                }
-            } catch (error) {
-                alert('An error occurred while deleting the question.');
-                console.error(error);
-            }
-        }
-
-        // Function to update a question
-        async function updateQuestion(questionId, newQuestion, newOptions, newCorrectAnswer) {
-            if (!examId) {
-                alert('Exam ID is missing!');
-                return;
-            }
-            try {
-                const response = await fetch(`${API_BASE}/questions/${examId}/questions/${questionId}`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        question: newQuestion,
-                        options: newOptions,
-                        correctAnswer: newCorrectAnswer,
-                    }),
-                });
-
-                if (response.ok) {
-                    alert('Question updated successfully!');
-                    fetchQuestions(); // Cập nhật danh sách câu hỏi sau khi sửa
-                } else {
-                    const errorData = await response.json();
-                    alert(`Failed to update question: ${errorData.message}`);
-                }
-            } catch (error) {
-                alert('An error occurred while updating the question.');
-                console.error(error);
-            }
-        }
-
-        async function fetchQuestions() {
-            if (!examId) {
-                alert('Invalid exam ID. Please select an exam.');
-                return;
-            }
-
-            const response = await fetch(`${API_BASE}/questions/${examId}/questions`);
-            const data = await response.json();
-
-            const questionsList = document.getElementById('questions');
-            questionsList.innerHTML = '';
-
-            if (data.questions && data.questions.length > 0) {
-                data.questions.forEach((q, index) => {
-                    const li = document.createElement('li');
-                    li.innerHTML = `
-                        <strong>Q${index + 1}: ${q.question}</strong>
-                        <ul>
-                            ${q.options.map(option => `<li>${option}</li>`).join('')}
-                        </ul>
-                        <p><strong>Correct Answer:</strong> ${q.correctAnswer}</p>
-                    `;
-
-                    // Container cho các biểu tượng
-                    const actionsDiv = document.createElement('div');
-                    actionsDiv.classList.add('actions');
-
-                    // Biểu tượng sửa câu hỏi
-                    const editIcon = document.createElement('i');
-                    editIcon.classList.add('fas', 'fa-edit'); // Icon sửa
-                    editIcon.title = 'Edit Question'; // Tooltip khi hover
-                    editIcon.style.cursor = 'pointer';
-                    editIcon.style.marginRight = '10px';
-                    editIcon.addEventListener('click', () => {
-                        const newQuestion = prompt('Enter new question:', q.question);
-                        const newOptions = prompt('Enter new options (comma-separated):', q.options.join(','));
-                        const newCorrectAnswer = prompt('Enter new correct answer:', q.correctAnswer);
-
-                        if (newQuestion && newOptions && newCorrectAnswer) {
-                            updateQuestion(q._id, newQuestion, newOptions.split(',').map(opt => opt.trim()), newCorrectAnswer);
-                        }
-                    });
-
-                    // Biểu tượng xóa câu hỏi
-                    const deleteIcon = document.createElement('i');
-                    deleteIcon.classList.add('fas', 'fa-trash-alt'); // Icon xóa
-                    deleteIcon.title = 'Delete Question'; // Tooltip
-                    deleteIcon.style.cursor = 'pointer';
-                    deleteIcon.style.color = 'red';
-                    deleteIcon.addEventListener('click', () => {
-                        if (confirm(`Are you sure you want to delete this question: "${q.question}"?`)) {
-                            deleteQuestion(q._id);
-                        }
-                    });
-
-                    // Thêm các biểu tượng vào container
-                    actionsDiv.appendChild(editIcon);
-                    actionsDiv.appendChild(deleteIcon);
-
-                    // Thêm container biểu tượng vào danh sách
-                    li.appendChild(actionsDiv);
-                    questionsList.appendChild(li);
-                });
-            } else {
-                questionsList.innerHTML = '<p>No questions found for this exam.</p>';
-            }
-        }
-
-        const viewQuestionsForm = document.getElementById('view-questions-form');
-        const examSelectView = document.getElementById('exam-select-view');
-
-        // Populate exam dropdown for viewing questions
+        // Populate exam dropdown
         async function populateExamDropdown() {
-            const response = await fetch(`${API_BASE}/exams`);
-            const exams = await response.json();
+            const response = await fetch(`${API_BASE}/exams`, {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem('token')}`,
+                },
+            });
 
-            examSelectView.innerHTML = '<option value="">Select an exam</option>'; // Thêm tùy chọn mặc định
+            const exams = await response.json();
+            console.log('Exams fetched:', exams);
+
+            const examSelectView = document.getElementById('exam-select-view');
+            examSelectView.innerHTML = '<option value="">Select an exam</option>';
             exams.forEach(exam => {
                 const option = document.createElement('option');
-                option.value = exam.id;
+                option.value = exam._id;
                 option.textContent = exam.title;
                 examSelectView.appendChild(option);
             });
+
+            // Nếu có examId trên URL thì set selected
+            if (examId) {
+                examSelectView.value = examId;
+            }
         }
 
-        viewQuestionsForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const examId = examSelectView.value;
+        // Fetch and display questions
+        async function fetchQuestions() {
+            if (!examId || examId === 'undefined') {
+                return; // chưa chọn thì thôi
+            }
 
+            try {
+                const response = await fetch(`${API_BASE}/questions/${examId}/questions`, {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem('token')}`,
+                    },
+                });
+
+                if (!response.ok) {
+                    console.error('Failed to fetch questions:', response.status);
+                    return;
+                }
+
+                const data = await response.json();
+                const questionsList = document.getElementById('questions');
+                questionsList.innerHTML = '';
+
+                if (data.questions && data.questions.length > 0) {
+                    data.questions.forEach((q, index) => {
+                        const li = document.createElement('li');
+                        li.innerHTML = `
+                            <strong>Q${index + 1}: ${q.question}</strong>
+                            <div class="question-actions">
+                                <button class="edit-btn" data-id="${q._id}" data-exam="${examId}">
+                                    <i class="fa fa-edit"></i>
+                                </button>
+                                <button class="delete-btn" data-id="${q._id}" data-exam="${examId}">
+                                    <i class="fa fa-trash"></i>
+                                </button>
+                            </div>
+                            <ul>
+                                ${q.options.map(option => `<li>${option}</li>`).join('')}
+                            </ul>
+                            <p><strong>Correct Answer:</strong> ${q.correctAnswer}</p>
+                        `;
+                        questionsList.appendChild(li);
+                    });
+
+                    // Gắn sự kiện sau khi render
+                    document.querySelectorAll('.delete-btn').forEach(btn => {
+                        btn.addEventListener('click', async (e) => {
+                            const questionId = e.currentTarget.getAttribute('data-id');
+                            const examId = e.currentTarget.getAttribute('data-exam');
+                            if (confirm('Bạn có chắc muốn xóa câu hỏi này không?')) {
+                                await deleteQuestion(examId, questionId);
+                                fetchQuestions(); // refresh danh sách
+                            }
+                        });
+                    });
+
+                    document.querySelectorAll('.edit-btn').forEach(btn => {
+                        btn.addEventListener('click', async (e) => {
+                            const questionId = e.currentTarget.getAttribute('data-id');
+                            const examId = e.currentTarget.getAttribute('data-exam');
+                            const newQuestion = prompt('Nhập lại nội dung câu hỏi:');
+                            if (newQuestion) {
+                                await updateQuestion(examId, questionId, { question: newQuestion });
+                                fetchQuestions(); // refresh danh sách
+                            }
+                        });
+                    });
+
+                } else {
+                    questionsList.innerHTML = '<p>No questions found for this exam.</p>';
+                }
+            } catch (error) {
+                console.error('An error occurred while fetching questions:', error);
+            }
+        }
+
+        // API delete
+        async function deleteQuestion(examId, questionId) {
+            try {
+                const response = await fetch(`${API_BASE}/questions/${examId}/questions/${questionId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem('token')}`,
+                    },
+                });
+                if (!response.ok) {
+                    alert('Xóa thất bại!');
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Có lỗi khi xóa câu hỏi.');
+            }
+        }
+
+        // API update
+        async function updateQuestion(examId, questionId, updatedData) {
+            try {
+                const response = await fetch(`${API_BASE}/questions/${examId}/questions/${questionId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${localStorage.getItem('token')}`,
+                    },
+                    body: JSON.stringify(updatedData),
+                });
+                if (!response.ok) {
+                    alert('Cập nhật thất bại!');
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Có lỗi khi cập nhật câu hỏi.');
+            }
+        }
+
+        // Event chọn exam
+        document.getElementById('view-questions-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const examId = document.getElementById('exam-select-view').value;
             if (!examId) {
                 alert('Please select an exam to view questions.');
                 return;
             }
-
-            // Chuyển hướng đến viewQuestions.html với examId trong query string
             window.location.href = `viewQuestions.html?examId=${examId}`;
         });
 

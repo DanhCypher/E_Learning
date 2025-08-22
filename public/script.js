@@ -7,65 +7,113 @@ const examsList = document.getElementById('exams');
 const uploadForm = document.getElementById('upload-form');
 const examSelect = document.getElementById('exam-select');
 const fileInput = document.getElementById('file-input');
+const registerForm = document.getElementById('register-form');
+const randomExamForm = document.getElementById('random-exam-form');
+const randomExamTitleSelect = document.getElementById('random-exam-title');
+const randomExamQuestionsInput = document.getElementById('random-exam-questions');
+const randomExamQuestionsDescription = document.getElementById('random-exam-description');
+const loginForm = document.getElementById('login-form');
+
+// render Exam
+function renderExams(exams) {
+    const examsList = document.getElementById('exams');
+    examsList.innerHTML = ''; // Clear previous exams
+
+    exams.forEach(exam => {
+        const li = document.createElement('li');
+        li.innerHTML = `<span>${exam.title}</span>`;
+
+        // Create action buttons
+        const actions = document.createElement('div');
+        actions.classList.add('actions');
+
+        const editBtn = document.createElement('button');
+        editBtn.classList.add('action-btn', 'edit-btn');
+        editBtn.title = 'Edit';
+        editBtn.innerHTML = '<i class="fa fa-pencil-alt"></i>';
+        editBtn.onclick = () => {
+            const newTitle = prompt('Enter new exam title:', exam.title);
+            if (newTitle) {
+                console.log('Updating exam:', exam.id || exam._id); // Debug log
+                updateExamTitle(exam.id || exam._id, newTitle); // Pass the correct exam ID
+            }
+        };
+
+        const deleteBtn = document.createElement('button');
+        deleteBtn.classList.add('action-btn', 'delete-btn');
+        deleteBtn.title = 'Delete';
+        deleteBtn.innerHTML = '<i class="fa fa-trash-alt"></i>';
+        deleteBtn.onclick = () => {
+            console.log('Deleting exam:', exam.id || exam._id); // Debug log
+            deleteExam(exam.id || exam._id); // Pass the correct exam ID
+        };
+
+        actions.appendChild(editBtn);
+        actions.appendChild(deleteBtn);
+        li.appendChild(actions);
+
+        examsList.appendChild(li);
+    });
+}
 
 // Fetch and display all exams
 async function fetchExams() {
-    const response = await fetch(`${API_BASE}/exams`);
-    const exams = await response.json();
+    const token = localStorage.getItem('token');
 
-    // Populate exam list
-    examsList.innerHTML = '';
-    exams.forEach(exam => {
-        const li = document.createElement('li');
-
-        // Hiển thị tên exam
-        const titleSpan = document.createElement('span');
-        titleSpan.textContent = exam.title;
-
-        // Tạo container cho các biểu tượng
-        const actionsDiv = document.createElement('div');
-        actionsDiv.classList.add('actions');
-
-        // Biểu tượng sửa tên exam
-        const editIcon = document.createElement('i');
-        editIcon.classList.add('fas', 'fa-edit'); // Sử dụng biểu tượng Font Awesome
-        editIcon.title = 'Edit';
-        editIcon.addEventListener('click', () => {
-            const newTitle = prompt('Enter new title for the exam:', exam.title);
-            if (newTitle) {
-                updateExamTitle(exam.id, newTitle);
-            }
+    try {
+        const response = await fetch(`${API_BASE}/exams`, {
+            headers: {
+                Authorization: `Bearer ${token}`, // Include token
+            },
         });
 
-        // Biểu tượng xóa exam
-        const deleteIcon = document.createElement('i');
-        deleteIcon.classList.add('fas', 'fa-trash', 'delete'); // Sử dụng biểu tượng Font Awesome
-        deleteIcon.title = 'Delete';
-        deleteIcon.addEventListener('click', () => {
-            if (confirm(`Are you sure you want to delete the exam "${exam.title}"?`)) {
-                deleteExam(exam.id);
-            }
-        });
+        if (response.status === 401) {
+            alert('Unauthorized access. Please log in.');
+            window.location.href = 'login.html'; // Redirect to login page
+            return;
+        }
 
-        // Thêm các biểu tượng vào container
-        actionsDiv.appendChild(editIcon);
-        actionsDiv.appendChild(deleteIcon);
+        const exams = await response.json();
 
-        // Thêm các phần tử vào danh sách
-        li.appendChild(titleSpan);
-        li.appendChild(actionsDiv);
-        examsList.appendChild(li);
-    });
+        // lưu dữ liệu vào localStogage
+        localStorage.setItem('exams', JSON.stringify(exams));
 
-    // Populate exam dropdown
-    examSelect.innerHTML = '<option value="">Select an exam</option>'; // Thêm tùy chọn mặc định
+        renderExams(exams);
+
+        populateExamDropdowns(exams);
+
+        console.log('Exams fetched:', exams); // Debug response
+
+    } catch (error) {
+        console.error('Failed to fetch exams:', error);
+        alert('An error occurred while fetching exams.');
+    }
+}
+
+function populateExamDropdowns(exams) {
+    const examSelect = document.getElementById('exam-select');
+    const randomExamTitleSelect = document.getElementById('random-exam-title');
+
+
+    // Clear previous options
+    examSelect.innerHTML = '<option value="">Select an exam</option>';
+    randomExamTitleSelect.innerHTML = '<option value="">Select an exam</option>';
+
+    // Populate dropdowns with exam titles
     exams.forEach(exam => {
-        const option = document.createElement('option');
-        option.value = exam.id;
-        option.textContent = exam.title;
-        examSelect.appendChild(option);
+        const option1 = document.createElement('option');
+        option1.value = exam.id || exam._id;
+        option1.textContent = exam.title;
+        examSelect.appendChild(option1);
+
+        const option2 = document.createElement('option');
+        option2.value = exam.id || exam._id;
+        option2.textContent = exam.title;
+        randomExamTitleSelect.appendChild(option2);
     });
 }
+
+
 
 // Create a new exam
 createExamForm.addEventListener('submit', async (e) => {
@@ -74,7 +122,10 @@ createExamForm.addEventListener('submit', async (e) => {
 
     const response = await fetch(`${API_BASE}/exams`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${localStorage.getItem('token')}`, // Include token
+        },
         body: JSON.stringify({ title }),
     });
 
@@ -130,6 +181,9 @@ async function deleteExam(examId) {
     try {
         const response = await fetch(`${API_BASE}/exams/${examId}`, {
             method: 'DELETE',
+            headers: {
+                Authorization: `Bearer ${localStorage.getItem('token')}`,
+            },
         });
 
         if (response.ok) {
@@ -146,10 +200,14 @@ async function deleteExam(examId) {
 }
 
 async function updateExamTitle(examId, newTitle) {
+    console.log('Exam ID:', examId);
     try {
         const response = await fetch(`${API_BASE}/exams/${examId}`, {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${localStorage.getItem('token')}`,
+            },
             body: JSON.stringify({ title: newTitle }),
         });
 
@@ -215,6 +273,124 @@ async function updateQuestion(questionId, newQuestion, newOptions, newCorrectAns
         console.error(error);
     }
 }
+
+// Register a new user
+registerForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
+
+    try {
+        const response = await fetch(`${API_BASE}/users/register`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, password }),
+        });
+
+        if (response.ok) {
+            alert('User registered successfully!');
+            registerForm.reset();
+        } else {
+            const errorData = await response.json();
+            alert(`Failed to register: ${errorData.message}`);
+        }
+    } catch (error) {
+        alert('An error occurred while registering.');
+        console.error(error);
+    }
+});
+
+// Populate dropdown with exam titles
+async function populateRandomExamDropdown() {
+    try {
+        const response = await fetch(`${API_BASE}/exams`);
+        const exams = await response.json();
+
+        randomExamTitleSelect.innerHTML = '<option value="">Select an Exam Title</option>'; // Thêm tùy chọn mặc định
+        exams.forEach(exam => {
+            const option = document.createElement('option');
+            option.value = exam.id; // Sử dụng ID của exam làm giá trị
+            option.textContent = exam.title; // Hiển thị tiêu đề của exam
+            randomExamTitleSelect.appendChild(option);
+        });
+    } catch (error) {
+        console.error('Failed to fetch exams:', error);
+        alert('An error occurred while fetching exam titles.');
+    }
+}
+
+// Handle random exam creation
+randomExamForm.addEventListener('submit', async (e) => {
+    e.preventDefault(); // Prevent the default form submission behavior
+
+    console.log('Create Random Exam button clicked'); // Debug log
+
+    const examId = randomExamTitleSelect.value; // Get selected exam ID
+    const numberOfQuestions = parseInt(randomExamQuestionsInput.value);
+
+    if (!examId) {
+        alert('Please select an exam title.');
+        return;
+    }
+
+    if (!numberOfQuestions || numberOfQuestions <= 0) {
+        alert('Please enter a valid number of questions.');
+        return;
+    }
+
+    try {
+        const response = await fetch(`${API_BASE}/exams/random`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${localStorage.getItem('token')}`, // Include token
+            },
+            body: JSON.stringify({ title: examId, numberOfQuestions }),
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            alert('Random exam created successfully!');
+            window.location.href = `takeExam.html?examId=${data.examId}`; // Redirect to the exam link
+        } else {
+            const errorData = await response.json();
+            alert(`Failed to create random exam: ${errorData.message}`);
+        }
+    } catch (error) {
+        alert('An error occurred while creating the random exam.');
+        console.error(error);
+    }
+});
+
+// Login user
+loginForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
+
+    try {
+        const response = await fetch(`${API_BASE}/users/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, password }),
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            localStorage.setItem('token', data.token); // Save token in localStorage
+            alert('Login successful!');
+            window.location.href = 'index.html'; // Redirect to the main page
+        } else {
+            const errorData = await response.json();
+            alert(`Failed to login: ${errorData.message}`);
+        }
+    } catch (error) {
+        alert('ccccc');
+        alert('An error occurred while logging in.');
+        console.error(error);
+    }
+});
+
 
 // Initial fetch
 fetchExams();

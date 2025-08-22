@@ -10,6 +10,7 @@ const examSchema = new mongoose.Schema({
             correctAnswer: { type: String, required: true },
         },
     ],
+    createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }, // Thêm trường createdBy
 });
 
 // Thêm virtual để chuyển `_id` thành `id`

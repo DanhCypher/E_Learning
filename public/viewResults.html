@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>All Exam Results</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    table {
+      width: 90%;
+      margin: 2rem auto;
+      border-collapse: collapse;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: center;
+    }
+    th {
+      background-color: #f2f2f2;
+    }
+
+    /* Thêm style cho header */
+    header {
+      background: #000; 
+      color: #fff;
+      padding: 1rem 0;
+    }
+    header .container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 90%;
+      margin: auto;
+    }
+    header h1 {
+      margin: 0;
+    }
+    header nav a {
+      margin-left: 20px;
+      color: #fff;
+      text-decoration: none;
+      font-weight: bold;
+    }
+    header nav a:hover {
+      text-decoration: underline;
+    }
+
+    footer {
+      background: #000; 
+      color: #fff;
+      text-align: center;
+      padding: 1rem 0;
+      margin-top: 2rem;
+    }
+
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header>
+    <div class="container">
+      <h1>Online Exam System</h1>
+      <nav>
+        <a href="index.html">Home</a>
+        <a href="register.html">Register</a>
+        <a href="viewQuestions.html">View Questions</a>
+        <a href="viewResults.html">View Results</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="page-title">
+      <div class="container">
+        <h2>Tất cả kết quả thi</h2>
+        <p>Danh sách điểm số của toàn bộ thí sinh</p>
+      </div>
+    </section>
+
+    <section class="services">
+      <div class="container">
+        <table id="results-table">
+          <thead>
+            <tr>
+              <th>Tên thí sinh</th>
+              <th>Điểm</th>
+              <th>Tổng điểm</th>
+              <th>Bài thi</th>
+              <th>Ngày làm bài</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+    <!-- Footer -->
+  <footer>
+    <div class="container">
+      <p>© 2023 Online Exam System. All rights reserved.</p>
+    </div>
+  </footer>
+  <script>
+    const API_BASE = 'http://localhost:3000';
+
+    async function fetchResults() {
+      try {
+        const res = await fetch(`${API_BASE}/results`);
+        const results = await res.json();
+
+        const tbody = document.querySelector('#results-table tbody');
+        tbody.innerHTML = '';
+
+        results.forEach(r => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${r.studentName}</td>
+            <td>${r.score}</td>
+            <td>${r.total}</td>
+            <td>${r.examId?.title || 'N/A'}</td>
+            <td>${new Date(r.createdAt).toLocaleString()}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+
+      } catch (err) {
+        console.error("Failed to fetch results:", err);
+      }
+    }
+
+    
+    document.addEventListener('DOMContentLoaded', fetchResults);
+  </script>
+</body>
+</html>

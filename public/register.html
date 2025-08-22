@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Online Exam System</h1>
+            <nav>
+                <a href="index.html">Home</a>
+                <a href="register.html">Register</a>
+                <a href="viewQuestions.html">View Questions</a>
+                <a href="viewResults.html">View Results</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <!-- Page Title -->
+        <section class="page-title">
+            <div class="container">
+                <h2>Register</h2>
+                <p>Create an account to manage your exams and questions.</p>
+            </div>
+        </section>
+
+        <!-- Register Section -->
+        <section class="services">
+            <div class="container">
+                <div class="row">
+                    <!-- Register Form -->
+                    <div class="service-box">
+                        <h3>Create an Account</h3>
+                        <form id="register-form">
+                            <input type="text" id="username" placeholder="Username" required>
+                            <input type="password" id="password" placeholder="Password" required>
+                            <button type="submit">Register</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2023 Online Exam System. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        const API_BASE = 'http://localhost:3000';
+
+        const registerForm = document.getElementById('register-form');
+
+        registerForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                const response = await fetch(`${API_BASE}/users/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password }),
+                });
+
+                if (response.ok) {
+                    alert('User registered successfully!');
+                    registerForm.reset();
+                    window.location.href = 'index.html'; // Chuyển về trang chính sau khi đăng ký thành công
+                } else {
+                    const errorData = await response.json();
+                    alert(`Failed to register: ${errorData.message}`);
+                }
+            } catch (error) {
+                alert('An error occurred while registering.');
+                console.error(error);
+            }
+        });
+    </script>
+</body>
+</html>

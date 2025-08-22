@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Take Exam</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <main>
+        <!-- Page Title -->
+        <section class="page-title">
+            <div class="container">
+                <h2 id="exam-title"></h2>
+                <p>Answer the questions below and submit your answers.</p>
+            </div>
+        </section>
+
+        <!-- Exam Section (giống layout của viewQuestions) -->
+        <section class="services">
+            <div class="container">
+                <div class="row">
+                    <!-- Form làm bài thi -->
+                    <div class="service-box">
+                        <h3>Exam Questions</h3>
+                        <form id="exam-form">
+                            <div id="questions-container"></div>
+                            <button type="submit">Submit Answers</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2023 Online Exam System. All rights reserved.</p>
+        </div>
+    </footer>
+
+<script>
+    const API_BASE = 'http://localhost:3000';
+    const examId = new URLSearchParams(window.location.search).get('examId');
+
+    async function fetchExamDetails() {
+        if (!examId) {
+            alert('Exam ID is missing!');
+            return;
+        }
+
+        try {
+            const response = await fetch(`${API_BASE}/exams/${examId}`, {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem('token')}`,
+                },
+            });
+
+            if (!response.ok) {
+                alert('Failed to fetch exam details.');
+                return;
+            }
+
+            const exam = await response.json();
+            document.getElementById('exam-title').textContent = exam.title;
+
+            const questionsContainer = document.getElementById('questions-container');
+            questionsContainer.innerHTML = '';
+
+            exam.questions.forEach((question, index) => {
+                const div = document.createElement('div');
+                div.innerHTML = `
+                    <p><strong>Q${index + 1}: ${question.question}</strong></p>
+                    ${question.options.map(option => `
+                        <label>
+                            <input type="radio" name="question-${index}" value="${option}">
+                            ${option}
+                        </label>
+                    `).join('')}
+                `;
+                questionsContainer.appendChild(div);
+            });
+        } catch (error) {
+            console.error('Failed to fetch exam details:', error);
+        }
+    }
+
+    document.getElementById('exam-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const answers = [];
+        const questionsContainer = document.getElementById('questions-container');
+        const inputs = questionsContainer.querySelectorAll('input[type="radio"]:checked');
+        inputs.forEach(input => answers.push(input.value));
+
+        // Gửi lên server để chấm điểm
+        const response = await fetch(`${API_BASE}/exams/grade`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ examId, answers }),
+        });
+
+        const result = await response.json();
+
+        // Hỏi tên người làm bài
+        const studentName = prompt("Nhập tên của bạn:");
+        if (!studentName) {
+            alert("Bạn phải nhập tên để lưu kết quả!");
+            return;
+        }
+
+        // Hiện điểm
+        alert(`${studentName}, điểm của bạn: ${result.score}/${result.total}`);
+
+        // Lưu kết quả vào server
+        await fetch(`${API_BASE}/results`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                examId,
+                studentName,
+                score: result.score,
+                total: result.total
+            }),
+        });
+    });
+
+    document.addEventListener('DOMContentLoaded', fetchExamDetails);
+</script>
+
+</body>
+</html>
