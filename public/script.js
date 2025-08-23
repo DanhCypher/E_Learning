@@ -1,4 +1,4 @@
-const API_BASE = 'http://localhost:3000';
+const API_BASE = 'https://e-learning-beta-nine.vercel.app';
 
 // DOM Elements
 const createExamForm = document.getElementById('create-exam-form');
