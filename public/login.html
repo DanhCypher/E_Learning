@@ -28,6 +28,7 @@
                         <form id="login-form">
                             <input type="text" id="username" placeholder="Username" required>
                             <input type="password" id="password" placeholder="Password" required>
+                            <a href="register.html">Don't have an account? Register here.</a>
                             <button type="submit">Login</button>
                         </form>
                     </div>
@@ -67,7 +68,7 @@
                         localStorage.setItem('token', data.token);
                         // Chuyển hướng sau khi đăng nhập thành công
                         alert(`Welcome, ${data.user.username}!`);
-                        window.location.href = 'index.html';
+                        window.location.href = 'home.html';
                     }
                     else
                     {

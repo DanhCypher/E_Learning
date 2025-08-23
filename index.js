@@ -31,9 +31,9 @@ app.use('/results', resultRoutes);
 // Serve static files
 
 
+
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'login.html'));
-
 });
 
 app.use(express.static(path.join(__dirname, 'public'))); 

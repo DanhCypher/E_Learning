@@ -379,7 +379,7 @@ loginForm.addEventListener('submit', async (e) => {
             const data = await response.json();
             localStorage.setItem('token', data.token); // Save token in localStorage
             alert('Login successful!');
-            window.location.href = 'index.html'; // Redirect to the main page
+            window.location.href = 'home.html'; // Redirect to the main page
         } else {
             const errorData = await response.json();
             alert(`Failed to login: ${errorData.message}`);

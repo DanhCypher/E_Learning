@@ -8,17 +8,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <header>
-        <div class="container">
-            <h1>Online Exam System</h1>
-            <nav>
-                <a href="index.html">Home</a>
-                <a href="register.html">Register</a>
-                <a href="viewQuestions.html">View Questions</a>
-                <a href="viewResults.html">View Results</a>
-            </nav>
-        </div>
-    </header>
 
     <main>
         <!-- Page Title -->
@@ -73,7 +62,7 @@
                 if (response.ok) {
                     alert('User registered successfully!');
                     registerForm.reset();
-                    window.location.href = 'index.html'; // Chuyển về trang chính sau khi đăng ký thành công
+                    window.location.href = 'home.html'; // Chuyển về trang chính sau khi đăng ký thành công
                 } else {
                     const errorData = await response.json();
                     alert(`Failed to register: ${errorData.message}`);
